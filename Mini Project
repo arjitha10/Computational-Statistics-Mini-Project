@@ -1,0 +1,65 @@
+import numpy as np
+
+# Sample Dataset (Manually Defined)
+# Features: [Feature1 (e.g., demand), Feature2 (e.g., quality rating)]
+# Target: Price
+X = np.array([
+    [3, 5],
+    [2, 8],
+    [4, 6],
+    [1, 7],
+    [3, 9]
+])  # Example features
+
+y = np.array([15, 20, 25, 18, 22]).reshape(-1, 1)  # Prices (Target)
+
+# Add a bias column to X (for the intercept term in Linear Regression)
+X = np.hstack((np.ones((X.shape[0], 1)), X))
+
+# Split data into training and testing sets
+def train_test_split(X, y, test_size=0.2):
+    np.random.seed(42)
+    indices = np.arange(len(X))
+    np.random.shuffle(indices)
+    split_idx = int(len(X) * (1 - test_size))
+    train_indices, test_indices = indices[:split_idx], indices[split_idx:]
+    return X[train_indices], X[test_indices], y[train_indices], y[test_indices]
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+# Linear Regression Functions
+def fit_linear_regression(X, y):
+    """Train Linear Regression using the Normal Equation."""
+    return np.linalg.inv(X.T.dot(X)).dot(X.T).dot(y)
+
+def predict(X, weights):
+    """Predict target values given features and weights."""
+    return X.dot(weights)
+
+def mean_squared_error(y_true, y_pred):
+    """Calculate Mean Squared Error."""
+    return np.mean((y_true - y_pred) ** 2)
+
+def r2_score(y_true, y_pred):
+    """Calculate R² Score."""
+    ss_total = np.sum((y_true - np.mean(y_true)) ** 2)
+    ss_residual = np.sum((y_true - y_pred) ** 2)
+    return 1 - (ss_residual / ss_total)
+
+# Train the model
+weights = fit_linear_regression(X_train, y_train)
+
+# Predict on test data
+y_pred = predict(X_test, weights)
+
+# Evaluate the model
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+
+print(f"Mean Squared Error: {mse}")
+print(f"R² Score: {r2}")
+
+# Predict prices for new data
+new_product_data = np.array([[1, 3, 7]])  # Add '1' for the bias term, then feature values
+predicted_price = predict(new_product_data, weights)
+print(f"Predicted Price: {predicted_price[0]}")
